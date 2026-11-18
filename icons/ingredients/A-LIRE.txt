@@ -1,0 +1,1 @@
+Dépose ici les icônes d'ingrédients (256 px, fond transparent, .webp), ex. tomate.webp
