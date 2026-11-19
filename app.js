@@ -174,6 +174,15 @@ var ICON_ALIAS = {"tomates cerises":"tomate",
   "persil":"persil",
   "gingembre":"gingembre",
   "salade":"salade",
+  "bombe":"bombe",
+  "insecticide":"bombe",
+  "desodorisant":"bombe",
+  "laque":"bombe",
+  "mousse a raser":"bombe",
+  "anti moustique":"bombe",
+  "vin":"vin",
+  "vin rouge":"vin",
+  "vin blanc":"vin",
   "laitue":"salade",
   "brocolis":"brocoli",
   "courge butternut":"butternut",
@@ -240,6 +249,7 @@ var ICON_ALIAS = {"tomates cerises":"tomate",
   "savon":"savon",
   "papier alu":"papier-alu",
   "bouillon cube":"bouillon"};
+var ICON_LIST = [["adoucissant", "Adoucissant"], ["ail", "Ail"], ["aubergine", "Aubergine"], ["avocat", "Avocat"], ["banane", "Banane"], ["basilic", "Basilic"], ["beurre", "Beurre"], ["beurre-cacahuete", "Beurre de cacahuète"], ["bombe", "Bombe aérosol"], ["bouillon", "Bouillon"], ["brocoli", "Brocoli"], ["butternut", "Butternut"], ["cafe", "Café"], ["carotte", "Carotte"], ["champignon", "Champignon"], ["chocolat", "Chocolat"], ["chou-fleur", "Chou-fleur"], ["citron", "Citron"], ["citron-vert", "Citron vert"], ["concombre", "Concombre"], ["confiture-abricot", "Confiture abricot"], ["confiture-figue", "Confiture figue"], ["confiture-fraise", "Confiture fraise"], ["confiture-myrtille", "Confiture myrtille"], ["confiture-orange", "Confiture orange"], ["coriandre", "Coriandre"], ["cotons", "Cotons"], ["courgette", "Courgette"], ["creme", "Crème fraîche"], ["cumin", "Cumin"], ["curry", "Curry"], ["dentifrice", "Dentifrice"], ["deodorant-bille", "Déodorant bille"], ["deodorant", "Déodorant spray"], ["deodorant-stick", "Déodorant stick"], ["edamame", "Edamame"], ["essuie-tout", "Essuie-tout"], ["farine", "Farine"], ["feta", "Feta"], ["film-alimentaire", "Film alimentaire"], ["flageolet", "Flageolets"], ["flocons-avoine", "Flocons d’avoine"], ["fromage-rape", "Fromage râpé"], ["gel-douche", "Gel douche"], ["gingembre", "Gingembre"], ["gnocchis", "Gnocchis"], ["haricots-noirs", "Haricots noirs"], ["haricots-rouges", "Haricots rouges"], ["herbes", "Herbes de Provence"], ["huile-olive", "Huile d’olive"], ["javel", "Javel"], ["lait", "Lait"], ["lait-coco", "Lait de coco"], ["lait-avoine", "Lait végétal"], ["lentilles", "Lentilles corail"], ["lentilles-vertes", "Lentilles vertes"], ["lessive", "Lessive"], ["liquide-vaisselle", "Liquide vaisselle"], ["mais", "Maïs (boîte)"], ["mais-epi", "Maïs (épi)"], ["maizena", "Maïzena"], ["miel", "Miel"], ["mouchoirs", "Mouchoirs"], ["moutarde", "Moutarde"], ["mozzarella", "Mozzarella"], ["nettoyant", "Nettoyant multi-surfaces"], ["noix", "Noix"], ["noix-cajou", "Noix de cajou"], ["nouilles", "Nouilles"], ["oignon", "Oignon"], ["olives", "Olives"], ["pain", "Pain"], ["papier-aluminium", "Papier aluminium"], ["papier-cuisson", "Papier cuisson"], ["papier-toilette", "Papier toilette"], ["parmesan", "Parmesan"], ["pastilles-lave-vaisselle", "Pastilles lave-vaisselle"], ["patate-douce", "Patate douce"], ["persil", "Persil"], ["pesto", "Pesto"], ["poireau", "Poireau"], ["pois-chiches", "Pois chiches"], ["poivre", "Poivre"], ["poivron", "Poivron"], ["pomme-de-terre", "Pomme de terre"], ["pates", "Pâtes (farfalle)"], ["quinoa", "Quinoa"], ["riz", "Riz"], ["sacs-congelation", "Sacs congélation"], ["sacs-poubelle", "Sacs poubelle"], ["salade", "Salade"], ["sauce-soja", "Sauce soja"], ["sauce-tomate", "Sauce tomate"], ["savon", "Savon mains"], ["sel", "Sel"], ["semoule", "Semoule"], ["shampoing", "Shampoing"], ["sucre", "Sucre"], ["the", "Thé"], ["tofu", "Tofu"], ["tomate", "Tomate"], ["tortilla", "Tortilla"], ["vin", "Vin"], ["vinaigre", "Vinaigre"], ["yaourt", "Yaourt"], ["epices", "Épices"], ["epinards", "Épinards"], ["eponge", "Éponges"], ["oeuf", "Œuf"]];
 var ICO_COLS = ['#FF8FB1','#7BD389','#FFB872','#8CC8FF','#B79BFF','#FFC93C','#FF7A7A','#5DCFB8'];
 
 /* ---------- petits dessins ---------- */
@@ -341,19 +351,67 @@ var GEAR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-widt
 
 /* ---------- icônes d'ingrédients ---------- */
 window.__icoMiss = window.__icoMiss || {};
-function iconSlug(name){
-  var k=deacc(name).replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+/* Familles d'images : l'appli choisit la bonne variante d'après le nom,
+   et un appui sur l'image propose les autres variantes de la famille. */
+var ICON_FAMS=[
+  {id:'lait',label:'Laits',re:/^lait|boisson (vegetale|d avoine|de soja|d amande)/,items:[['lait','Lait',null],['lait-avoine','Lait végétal',/avoine|soja|amande|riz|vegetal|noisette/],['lait-coco','Lait de coco',/coco/]]},
+  {id:'confiture',label:'Confitures',re:/confiture|marmelade|gelee de/,items:[['confiture-fraise','Fraise',/fraise|framboise|cerise|groseille/],['confiture-abricot','Abricot',/abricot|peche|mangue|mirabelle/],['confiture-myrtille','Myrtille',/myrtille|cassis|mure/],['confiture-figue','Figue',/figue|prune|pruneau|raisin|chataigne|marron/],['confiture-orange','Orange',/orange|marmelade|agrume|citron|clementine/]]},
+  {id:'pates',label:'Pâtes',re:/(^|\s)pates|spaghetti|penne|coquillette|fusilli|tagliatelle|lasagne|farfalle|macaroni|linguine|rigatoni|torsade/,items:[['pates','Farfalle',/farfalle/],['pates-spaghetti','Spaghetti',/spaghetti|linguine/],['pates-penne','Penne',/penne|rigatoni/],['pates-coquillettes','Coquillettes',/coquillette|macaroni/],['pates-fusilli','Fusilli',/fusilli|torsade/],['pates-tagliatelles','Tagliatelles',/tagliatelle|fettuccine/],['pates-lasagnes','Lasagnes',/lasagne/]]},
+  {id:'citron',label:'Citrons',re:/citron/,items:[['citron','Citron',null],['citron-vert','Citron vert',/vert/]]},
+  {id:'lentilles',label:'Lentilles',re:/lentille/,items:[['lentilles','Corail',/corail|rouge/],['lentilles-vertes','Vertes',/vert|puy|brune|noire/]]},
+  {id:'deo',label:'Déodorants',re:/deo/,items:[['deodorant','Spray',/spray|aerosol/],['deodorant-bille','Bille',/bille|roll/],['deodorant-stick','Stick',/stick/]]},
+  {id:'mais',label:'Maïs',re:/(^|\s)mais(\s|$)/,items:[['mais','En boîte',null],['mais-epi','Épi',/epi/]]},
+  {id:'haricots',label:'Haricots',re:/haricot|flageolet/,items:[['haricots-rouges','Rouges',/rouge/],['haricots-noirs','Noirs',/noir/],['flageolet','Flageolets',/flageolet|blanc|vert/]]},
+  {id:'yaourt',label:'Yaourts',re:/yaourt|yogourt|skyr|fromage blanc|petit suisse/,items:[['yaourt','Yaourt',null]]},
+  {id:'fromage',label:'Fromages',re:/fromage|feta|mozza|parmesan|emmental|comte|chevre|cheddar|halloumi|gruyere|burrata|ricotta|pecorino/,items:[['fromage-rape','Râpé',/rape/],['parmesan','Parmesan',/parmesan|pecorino|grana|comte/],['feta','Feta',/feta|chevre|halloumi/],['mozzarella','Mozzarella',/mozza|burrata|ricotta/]]},
+  {id:'cereales',label:'Céréales',re:/(^|\s)riz(\s|$)|quinoa|semoule|couscous|flocon|boulgour|avoine/,items:[['riz','Riz',/riz/],['quinoa','Quinoa',/quinoa/],['semoule','Semoule',/semoule|couscous|boulgour/],['flocons-avoine','Flocons d’avoine',/flocon|avoine/]]},
+  {id:'rouleaux',label:'Rouleaux cuisine',re:/papier alu|aluminium|film|papier cuisson|sulfuris/,items:[['papier-aluminium','Aluminium',/alu/],['film-alimentaire','Film',/film/],['papier-cuisson','Cuisson',/cuisson|sulfuri/]]},
+  {id:'bouteilles',label:'Bouteilles',re:/huile|vinaigre|sauce soja|(^|\s)vin(\s|$)/,items:[['huile-olive','Huile',/huile/],['vinaigre','Vinaigre',/vinaigre/],['sauce-soja','Sauce soja',/soja/],['vin','Vin',/(^|\s)vin(\s|$)/]]},
+  {id:'epices',label:'Épices',re:/epice|curry|cumin|herbe|paprika|curcuma|cannelle|thym|origan|piment|muscade|ras el hanout|garam|coriandre moulue/,items:[['epices','Épices',null],['curry','Curry',/curry|curcuma/],['cumin','Cumin',/cumin|cannelle|paprika|piment|ras el hanout|garam/],['herbes','Herbes',/herbe|thym|origan/]]},
+  {id:'flacons',label:'Flacons',re:/gel douche|shampo|savon|apres sh/,items:[['gel-douche','Gel douche',/douche/],['shampoing','Shampoing',/^shampo/],['apres-shampoing','Après-shampoing',/apres/],['savon','Savon',/savon/]]},
+  {id:'entretien',label:'Entretien',re:/lessive|adoucissant|vaisselle|nettoyant|javel|multi surface/,items:[['lessive','Lessive',/lessive/],['adoucissant','Adoucissant',/adouciss/],['liquide-vaisselle','Liquide vaisselle',/liquide|produit vaisselle/],['pastilles-lave-vaisselle','Pastilles',/pastille|tablette|lave vaisselle/],['nettoyant','Nettoyant',/nettoyant|multi/],['javel','Javel',/javel/]]},
+  {id:'pain',label:'Pains',re:/(^|\s)pain|tortilla|wrap|baguette/,items:[['pain','Pain',null],['tortilla','Tortilla',/tortilla|wrap|galette/]]},
+  {id:'noix',label:'Fruits à coque',re:/noix|cajou|amande|noisette|cacahuete|pistache/,items:[['noix','Noix',null],['noix-cajou','Cajou',/cajou/],['beurre-cacahuete','Beurre de cacahuète',/cacahuete/]]},
+  {id:'sacs',label:'Sacs',re:/(^|\s)sacs?(\s|$)/,items:[['sacs-poubelle','Poubelle',/poubelle/],['sacs-congelation','Congélation',/congel|zip|freezer/]]},
+  {id:'papier',label:'Papiers',re:/papier toilette|essuie|sopalin|mouchoir/,items:[['papier-toilette','Papier toilette',/toilette/],['essuie-tout','Essuie-tout',/essuie|sopalin/],['mouchoirs','Mouchoirs',/mouchoir/]]},
+  {id:'chaud',label:'Café & thé',re:/cafe|(^|\s)(the|tisane|infusion)(\s|$)/,items:[['cafe','Café',/cafe/],['the','Thé',/(^|\s)(the|tisane|infusion)(\s|$)/]]}
+];
+/* Produits dont on peut changer la couleur (flacons, emballages, pots) */
+var ICO_COLOR={'gel-douche':1,'shampoing':1,'apres-shampoing':1,'savon':1,'deodorant':1,'deodorant-bille':1,'deodorant-stick':1,'lessive':1,'adoucissant':1,'liquide-vaisselle':1,'nettoyant':1,'javel':1,'eponge':1,'yaourt':1};
+var ICON_HAVE={}; ICON_LIST.forEach(function(x){ ICON_HAVE[x[0]]=x[1]; });
+function icoText(name){ return deacc(name).replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim(); }
+function famItems(f){ return f.items.filter(function(it){ return ICON_HAVE[it[0]]; }); }
+function famOfName(name){ var d=icoText(name); for(var i=0;i<ICON_FAMS.length;i++){ if(ICON_FAMS[i].re.test(d) && famItems(ICON_FAMS[i]).length) return ICON_FAMS[i]; } return null; }
+function famOfSlug(slug){ for(var i=0;i<ICON_FAMS.length;i++){ if(famItems(ICON_FAMS[i]).some(function(it){ return it[0]===slug; })) return ICON_FAMS[i]; } return null; }
+function icoPref(name){ return (S && S.icons && S.icons[norm(name)]) || null; }
+function autoSlug(name){
+  var k=icoText(name), n=norm(name), fam=famOfName(name);
+  if(fam){ var m=famItems(fam).filter(function(it){ return it[2] && it[2].test(k); })[0]; if(m) return m[0]; }
   if(ICON_ALIAS[k]) return ICON_ALIAS[k];
-  var n=norm(name); if(ICON_ALIAS[n]) return ICON_ALIAS[n];
+  if(ICON_ALIAS[n]) return ICON_ALIAS[n];
+  if(fam) return famItems(fam)[0][0];
   return n.replace(/ /g,'-');
 }
+function iconSlug(name){ var p=icoPref(name); if(p && p.s) return p.s; return autoSlug(name); }
+/* Peut-on changer l'icône ? (famille avec plusieurs images, ou couleur) */
+function canChangeIco(name){ var sl=iconSlug(name), f=famOfSlug(sl)||famOfName(name); return !!((f && famItems(f).length>1) || ICO_COLOR[sl]); }
+/* Nom trop vague pour deviner la variante (ex. « confiture » sans parfum) */
+function icoVague(name){
+  var f=famOfName(name); if(!f) return false; var its=famItems(f); if(its.length<2 || !its[0][2]) return false;
+  var p=icoPref(name); if(p && p.s) return false;
+  var k=icoText(name); if(its.some(function(it){ return it[2] && it[2].test(k); })) return false;
+  if(ICON_ALIAS[k] || ICON_ALIAS[norm(name)]) return false;
+  return true;
+}
+function icoHue(name){ var p=icoPref(name); return (p && p.h && ICO_COLOR[iconSlug(name)]) ? +p.h : 0; }
 function icoHTML(name, small){
+  var hv=icoHue(name), hue=hv ? ' style="filter:hue-rotate('+hv+'deg)"' : '';
   var slug=iconSlug(name), n=deacc(name), h=0; for(var i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))>>>0;
   var col=ICO_COLS[h%ICO_COLS.length], ini=esc(cap(String(name||'?').trim().charAt(0)));
   var folder=isPixel() ? 'ingredients-pixel' : 'ingredients', id=folder+'/'+slug;
   var data=window.ICON_DATA && window.ICON_DATA[id];
   var src=data || ('icons/'+id+'.webp');
-  var img = (!data && window.__icoMiss[id]) ? '' : '<img src="'+esc(src)+'" alt="" loading="lazy" onload="this.style.opacity=1;this.parentNode.style.background=\'transparent\';this.parentNode.style.color=\'transparent\'" onerror="window.__icoMiss[\''+esc(id)+'\']=1;this.remove()">';
+  var img = (!data && window.__icoMiss[id]) ? '' : '<img src="'+esc(src)+'"'+hue+' alt="" loading="lazy" onload="this.style.opacity=1;this.parentNode.style.background=\'transparent\';this.parentNode.style.color=\'transparent\'" onerror="window.__icoMiss[\''+esc(id)+'\']=1;this.remove()">';
   return '<span class="ico'+(small?' sm':'')+'" style="background:'+col+'" aria-hidden="true">'+ini+img+'</span>';
 }
 
@@ -378,7 +436,7 @@ function migrate(s){
   s=s||{};
   s.v=2; s.recipes=s.recipes||[]; s.packs=s.packs||[];
   s.plan=s.plan||{}; s.plan.items=s.plan.items||[]; s.plan.reduce=s.plan.reduce||{}; s.plan.extras=s.plan.extras||[]; s.plan.stamp=s.plan.stamp||'s1';
-  s.settings=s.settings||{}; if(s.settings.expAsk==null) s.settings.expAsk=true; s.aisles=s.aisles||{};
+  s.settings=s.settings||{}; if(s.settings.expAsk==null) s.settings.expAsk=true; s.aisles=s.aisles||{}; s.icons=s.icons||{};
   s.theme=s.theme||'rose'; if(s.theme==='noir') s.theme='anthracite';
   if(!s.look || !s.look.bg){ s.look=presetLook(s.theme); s.look.preset=s.theme; } s.favs=s.favs||{}; s.types=s.types||{}; s.stock=s.stock||{};
   return s;
@@ -391,7 +449,31 @@ S=migrate(S);
 var checks={};
 (function(){ var c=null; try{ c=JSON.parse(lsGet(LS_CHECKS)); }catch(e){} if(c && c.stamp===S.plan.stamp) checks=c.keys||{}; })();
 function saveChecks(){ lsSet(LS_CHECKS, JSON.stringify({stamp:S.plan.stamp, keys:checks})); }
-function save(){ S.updatedAt=now(); lsSet(LS_KEY, JSON.stringify(S)); }
+function save(){ if(S && S.stock) vals(S.stock).forEach(syncLots); S.updatedAt=now(); lsSet(LS_KEY, JSON.stringify(S)); }
+/* ---------- lots : une même ligne, plusieurs achats avec leur date ---------- */
+function hasLots(st){ return st && (st.type==='compte'||st.type==='frais'); }
+function r3(x){ return Math.round(x*1000)/1000; }
+function lotOrder(a,b){ if(!a.exp&&!b.exp) return 0; if(!a.exp) return 1; if(!b.exp) return -1; return a.exp<b.exp?-1:a.exp>b.exp?1:0; }
+function syncLots(st){
+  if(!hasLots(st)){ if(st && st.lots) delete st.lots; return; }
+  var qty=Math.max(0,num(st.qty)), lots=(st.lots||[]).filter(function(l){ return num(l.q)>0.0005; });
+  var tot=lots.reduce(function(a,l){ return a+num(l.q); },0);
+  if(!lots.length && qty>0) lots=[{q:qty, exp:st.exp||null}];
+  else if(qty<tot-0.0005){
+    var take=tot-qty; lots.slice().sort(lotOrder).forEach(function(l){ if(take<=0) return; var d=Math.min(num(l.q),take); l.q=r3(num(l.q)-d); take-=d; });
+    lots=lots.filter(function(l){ return num(l.q)>0.0005; });
+  } else if(qty>tot+0.0005){ lots[lots.length-1].q=r3(num(lots[lots.length-1].q)+qty-tot); }
+  if(lots.length){ st.lots=lots; var dated=lots.filter(function(l){ return l.exp; }).sort(lotOrder); if(dated.length) st.exp=dated[0].exp; }
+  else delete st.lots;
+}
+function addLot(st, q, exp){
+  syncLots(st); q=num(q); if(q<=0) return;
+  var lots=st.lots||[], same=null;
+  lots.forEach(function(l){ if((l.exp||null)===(exp||null)) same=l; });
+  if(same) same.q=r3(num(same.q)+q); else lots.push({q:q, exp:exp||null});
+  st.lots=lots; st.qty=r3(num(st.qty)+q);
+  var dated=lots.filter(function(l){ return l.exp; }).sort(lotOrder); if(dated.length) st.exp=dated[0].exp;
+}
 
 /* ---------- données ---------- */
 function getRecipe(id){ for(var i=0;i<S.recipes.length;i++) if(S.recipes[i].id===id) return S.recipes[i]; return null; }
@@ -929,7 +1011,7 @@ function itemHTML(it){
   if(!it.pack && it.type!=='basique' && it.type!=='maison' && (it.unit==='g'||it.unit==='ml') && it.aisle!==PLACARD){
     chips+='<button class="linkbtn" data-a="setpack" data-x="'+esc(it.name)+'" data-y="'+it.unit+'">Indiquer la taille du paquet</button>';
   }
-  return '<div class="item'+(on?' done':'')+'"><button class="check'+(on?' on':'')+'" data-a="check" data-x="'+esc(it.key)+'" aria-pressed="'+on+'" aria-label="Cocher '+esc(it.name)+'"></button>'+icoHTML(it.name)+'<div class="txt"><div class="l1"><b>'+esc(cap(it.name))+'</b><span class="qty">'+esc(buyText(it))+'</span></div><div class="l2">'+esc(sub.join(' · '))+'</div>'+(chips?'<div class="chiprow">'+chips+'</div>':'')+(on&&chkInfo(it.key).exp?'<div class="l2">📅 '+esc(expText(chkInfo(it.key).exp))+' · <button class="linkbtn" data-a="expopen" data-x="'+esc(it.key)+'">modifier</button></div>':'')+'</div></div>';
+  return '<div class="item'+(on?' done':'')+'"><button class="check'+(on?' on':'')+'" data-a="check" data-x="'+esc(it.key)+'" aria-pressed="'+on+'" aria-label="Cocher '+esc(it.name)+'"></button>'+icoHTML(it.name)+'<div class="txt"><div class="l1"><b>'+esc(cap(it.name))+'</b><span class="qty">'+esc(buyText(it))+'</span></div><div class="l2">'+esc(sub.join(' · '))+'</div>'+(chips?'<div class="chiprow">'+chips+'</div>':'')+(on&&chkInfo(it.key).alt?'<div class="l2">↳ '+esc(cap(chkInfo(it.key).alt.name))+' (autre modèle)'+(chkInfo(it.key).exp?'':' · <button class="linkbtn" data-a="expopen" data-x="'+esc(it.key)+'">modifier</button>')+'</div>':'')+(on&&chkInfo(it.key).exp?'<div class="l2">📅 '+esc(expText(chkInfo(it.key).exp))+' · <button class="linkbtn" data-a="expopen" data-x="'+esc(it.key)+'">modifier</button></div>':'')+'</div></div>';
 }
 function extraHTML(x){
   var k='x:'+x.id, on=!!checks[k], st=x.skey?S.stock[x.skey]:null;
@@ -994,6 +1076,8 @@ function vShop(){
   return h;
 }
 
+function icoBtn(st){ return canChangeIco(st.name) ? '<button class="icobtn" data-a="icodirect" data-x="'+esc(st.key)+'" aria-label="Changer l’image">'+icoHTML(st.name)+'</button>' : icoHTML(st.name); }
+function lotPill(st){ var n=st.lots?st.lots.length:0; return n>1 && num(st.qty)>0 ? ' <button class="pill lotpill" data-a="prodopen" data-x="'+esc(st.key)+'" aria-label="'+n+' lots, voir le détail">'+n+' lots</button>' : ''; }
 function srowHTML(st){
   var low=isLow(st), q=num(st.qty), open=!!view.sopen[st.key];
   var status='';
@@ -1004,7 +1088,7 @@ function srowHTML(st){
     ? '<button class="lvl lvl-'+(st.have?'ok':'out')+'" data-a="havecycle" data-x="'+esc(st.key)+'" aria-label="'+esc(cap(st.name))+' : '+(st.have?'j’en ai':'fini')+'. Toucher pour changer">'+(st.have?'J’en ai':'Fini')+'</button>'
     : q<=0 ? '<button class="lvl lvl-out" data-a="prodopen" data-x="'+esc(st.key)+'" aria-label="'+esc(cap(st.name))+' : épuisé. Toucher pour modifier">Épuisé</button>'
     : '<span class="qtyedit"><input type="text" inputmode="decimal" data-f="sqty" data-i="'+esc(st.key)+'" value="'+esc(String(Math.round(q*100)/100).replace('.',','))+'" aria-label="Quantité de '+esc(st.name)+'"><span class="u">'+esc(st.unit==='pc'?'pc':unitLabel(st.unit))+'</span></span>';
-  var h='<div class="srow">'+icoHTML(st.name)+'<div class="nm"><b>'+esc(cap(st.name))+'</b><span class="small">'+(st.exp && q>0 ? esc(expText(st.exp)) : (st.type==='frais'?'acheté '+agoText(st.bought||st.at):'vérifié '+agoText(st.at)))+'</span> '+status+(q>0?expPill(st.exp):'')+'<div><button class="linkbtn" data-a="sopen" data-x="'+esc(st.key)+'">'+(open?'fermer':'options')+'</button></div>';
+  var h='<div class="srow">'+icoBtn(st)+'<div class="nm"><b>'+esc(cap(st.name))+'</b><span class="small">'+(st.exp && q>0 ? esc(expText(st.exp)) : (st.type==='frais'?'acheté '+agoText(st.bought||st.at):'vérifié '+agoText(st.at)))+'</span> '+status+(q>0?expPill(st.exp):'')+lotPill(st)+'<div><button class="linkbtn" data-a="sopen" data-x="'+esc(st.key)+'">'+(open?'fermer':'options')+'</button></div>';
   if(open){
     var thr=threshold(st);
     h+='<div class="sopts"><select data-f="stype" data-i="'+esc(st.key)+'" aria-label="Type">'+TYPES.map(function(t){return '<option value="'+t[0]+'"'+(t[0]===st.type?' selected':'')+'>'+t[1]+'</option>';}).join('')+'</select>'+
@@ -1022,7 +1106,7 @@ function levelPill(st){
 }
 function mrowHTML(st){
   var open=!!view.sopen[st.key];
-  var h='<div class="srow">'+icoHTML(st.name)+'<div class="nm"><b>'+esc(cap(st.name))+'</b><span class="small muted">vérifié '+agoText(st.at)+'</span><div><button class="linkbtn" data-a="sopen" data-x="'+esc(st.key)+'">'+(open?'fermer':'options')+'</button></div>';
+  var h='<div class="srow">'+icoBtn(st)+'<div class="nm"><b>'+esc(cap(st.name))+'</b><span class="small muted">vérifié '+agoText(st.at)+'</span><div><button class="linkbtn" data-a="sopen" data-x="'+esc(st.key)+'">'+(open?'fermer':'options')+'</button></div>';
   if(open) h+='<div class="sopts"><label class="small muted">Me demander tous les <select data-f="mevery" data-i="'+esc(st.key)+'" aria-label="Fréquence de vérification">'+EVERY_OPTS.map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===maisonEvery(st)?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></label><select data-f="mcat" data-i="'+esc(st.key)+'" aria-label="Catégorie">'+MAISON_AISLES.map(function(c){return '<option'+(c===st.aisle?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select><button class="linkbtn" data-a="sdel" data-x="'+esc(st.key)+'" style="color:#E23D5B">supprimer</button></div>';
   return h+'</div>'+levelPill(st)+'</div>';
 }
@@ -1077,8 +1161,26 @@ function optsHTML(st){
   h+='<button class="btn sm danger" data-a="sdel" data-x="'+k+'" style="align-self:flex-start">Supprimer ce produit</button></div>';
   return h;
 }
+var ICO_HUES=[[0,'Couleur d’origine'],[60,'Ton 1'],[120,'Ton 2'],[180,'Ton 3'],[240,'Ton 4'],[300,'Ton 5']];
+function icoTile(slug, label, on){
+  return '<button class="icopt'+(on?' on':'')+'" data-a="icoset" data-x="'+esc(slug)+'" aria-pressed="'+on+'" title="'+esc(label)+'">'+icoSlugHTML(slug)+'<span>'+esc(label)+'</span></button>';
+}
+function icoSlugHTML(slug){
+  var folder=isPixel() ? 'ingredients-pixel' : 'ingredients', id=folder+'/'+slug;
+  var data=window.ICON_DATA && window.ICON_DATA[id];
+  return '<span class="ico" style="background:#ddd" aria-hidden="true"><img src="'+esc(data||('icons/'+id+'.webp'))+'" alt="" loading="lazy" onload="this.style.opacity=1;this.parentNode.style.background=\'transparent\'"></span>';
+}
+function icoPicker(st){
+  var pref=icoPref(st.name)||{}, cur=iconSlug(st.name), fam=famOfSlug(cur)||famOfName(st.name);
+  var h='<div class="row between"><div class="row">'+icoHTML(st.name)+'<div><h2 id="prod-title">Image de « '+esc(cap(st.name))+' »</h2><div class="small muted">Touche une image pour la choisir</div></div></div><button class="icon-btn" data-a="icoback" aria-label="Fermer">×</button></div>';
+  if(ICO_COLOR[cur]) h+='<div class="small muted">Couleur</div><div class="hues">'+ICO_HUES.map(function(c){ var on=(+pref.h||0)===c[0]; return '<button class="hue'+(on?' on':'')+'" data-a="icohue" data-x="'+c[0]+'" aria-pressed="'+on+'" aria-label="'+esc(c[1])+'">'+icoSlugHTML(cur).replace('<img ','<img style="filter:hue-rotate('+c[0]+'deg)" ')+'</button>'; }).join('')+'</div>';
+  if(fam && famItems(fam).length>1) h+='<div class="small muted">'+esc(fam.label)+'</div><div class="icogrid">'+famItems(fam).map(function(it){ return icoTile(it[0],it[1],it[0]===cur); }).join('')+'</div>';
+  h+='<div class="row between">'+(pref.s||pref.h?'<button class="linkbtn" data-a="icoauto">Revenir au choix automatique</button>':'<span></span>')+'<button class="btn primary" data-a="icoback">Valider</button></div>';
+  return '<div class="modal-bg"><div class="card modal stack" role="dialog" aria-modal="true" aria-labelledby="prod-title">'+h+'</div></div>';
+}
 function prodModal(){
   var st=view.prodFor && S.stock[view.prodFor]; if(!st) return '';
+  if(view.icoFor===st.key) return icoPicker(st);
   var k=esc(st.key), q=num(st.qty), body='';
   if(st.type==='maison'){
     body='<div class="row between"><span class="muted small">État · touche pour changer</span>'+levelPill(st)+'</div>';
@@ -1087,14 +1189,17 @@ function prodModal(){
   } else {
     var step = st.unit==='pc' ? 1 : (st.unit==='g'||st.unit==='ml') ? 50 : 1;
     body='<div class="stack"><div class="row between"><span class="muted small">Quantité</span>'+(q<=0?'<span class="lvl lvl-out" style="cursor:default">Épuisé</span>':'')+'</div><div class="qbig"><button class="icon-btn" data-a="pqty" data-x="'+k+'" data-y="-'+step+'" aria-label="Moins">−</button><input type="text" inputmode="decimal" data-f="sqty" data-i="'+k+'" value="'+esc(String(Math.round(q*100)/100).replace('.',','))+'" aria-label="Quantité"><span class="u">'+esc(st.unit==='pc'?'pièce(s)':unitLabel(st.unit))+'</span><button class="icon-btn" data-a="pqty" data-x="'+k+'" data-y="'+step+'" aria-label="Plus">+</button></div></div>';
-    body+='<label class="f">Date de péremption<input class="inp" type="date" data-f="sexp" data-i="'+k+'" value="'+esc(st.exp||'')+'"></label>';
+    if(st.lots && st.lots.length>1){
+      body+='<div class="stack lots"><span class="muted small">'+st.lots.length+' lots · le plus ancien est utilisé en premier</span>'+st.lots.slice().map(function(l,i){ return [l,i]; }).sort(function(a,b){ return lotOrder(a[0],b[0]); }).map(function(x){ var l=x[0], i=x[1], dd=l.exp?daysUntil(l.exp):null;
+        return '<div class="lot'+(dd!=null&&dd<=2?' soon':'')+'"><span class="qtyedit"><input type="text" inputmode="decimal" data-f="lotq" data-i="'+k+'" data-y="'+i+'" value="'+esc(String(Math.round(num(l.q)*100)/100).replace('.',','))+'" aria-label="Quantité du lot"><span class="u">'+esc(st.unit==='pc'?'pc':unitLabel(st.unit))+'</span></span><input class="inp" type="date" data-f="lotexp" data-i="'+k+'" data-y="'+i+'" value="'+esc(l.exp||'')+'" aria-label="Date du lot"><button class="icon-btn sm" data-a="lotdel" data-x="'+k+'" data-y="'+i+'" aria-label="Supprimer ce lot">×</button></div>'; }).join('')+'</div>';
+    } else body+='<label class="f">Date de péremption<input class="inp" type="date" data-f="sexp" data-i="'+k+'" value="'+esc(st.exp||'')+'"></label>';
     var info=[]; if(q>0 && isLow(st)) info.push('bientôt épuisé'); if(st.exp && q>0) info.push(expText(st.exp));
     if(info.length) body+='<div class="small muted">'+esc(info.join(' · '))+'</div>';
   }
   var inList=!!lowExtra(st.key);
   var open=!!view.sopen[st.key];
   return '<div class="modal-bg"><div class="card modal stack" role="dialog" aria-modal="true" aria-labelledby="prod-title">'+
-    '<div class="row between"><div class="row">'+icoHTML(st.name)+'<div><h2 id="prod-title">'+esc(cap(st.name))+'</h2><div class="small muted">vérifié '+esc(agoText(st.at))+'</div></div></div><button class="icon-btn" data-a="prodclose" aria-label="Fermer">×</button></div>'+
+    '<div class="row between"><div class="row">'+(canChangeIco(st.name)?'<button class="icobtn" data-a="icopick" aria-label="Changer l’image">'+icoHTML(st.name)+'<span class="pen">✎</span></button>':icoHTML(st.name))+'<div><h2 id="prod-title">'+esc(cap(st.name))+'</h2><div class="small muted">vérifié '+esc(agoText(st.at))+'</div></div></div><button class="icon-btn" data-a="prodclose" aria-label="Fermer">×</button></div>'+
     body+
     '<button class="linkbtn" data-a="sopen" data-x="'+k+'" style="align-self:flex-start">'+(open?'Masquer les options':'Options')+'</button>'+(open?optsHTML(st):'')+
     '<div class="row" style="justify-content:flex-end"><button class="btn '+(inList?'mint':'primary')+'" data-a="lowadd" data-x="'+k+'">'+(inList?'✓ Dans la liste':'+ Ajouter à la liste')+'</button></div>'+
@@ -1160,6 +1265,17 @@ function lookEditor(){
   h+='<div class="row wrapflex" style="gap:6px"><span class="btn primary sm">Bouton</span><span class="chip on">Filtre</span><span class="pill mint">✓ Réalisable</span><span class="pill time">'+CLOCK+'20 min</span></div>';
   return h+'</div>';
 }
+/* « C'est un autre modèle » : nom précis + image de la famille → ligne de stock séparée */
+function altBox(name, ci){
+  var alt=ci.alt||null, fam=famOfName(alt?alt.name:name)||famOfName(name), ico=alt&&alt.ico||'';
+  var h='<button class="linkbtn" data-a="altshow" id="altlink" style="align-self:flex-start"'+(alt?' hidden':'')+'>C’est un autre modèle ?</button>';
+  h+='<div id="altbox" class="stack altbox" data-base="'+esc(name)+'" data-ico="'+esc(ico)+'"'+(alt?'':' hidden')+'><label class="f" for="exp-alt">Nom de ce modèle<input class="inp" id="exp-alt" value="'+esc(alt?alt.name:name+' ')+'" placeholder="Ex. : yaourt soja vanille"></label><span class="small muted">Il aura sa propre ligne dans le stock.</span>';
+  if(fam) h+='<span class="small muted">Son image</span><div class="icogrid">'+famItems(fam).map(function(it){ var on=ico===it[0]; return '<button class="icopt'+(on?' on':'')+'" data-a="altico" data-x="'+esc(it[0])+'" aria-pressed="'+on+'">'+icoSlugHTML(it[0])+'<span>'+esc(it[1])+'</span></button>'; }).join('')+'</div>';
+  var base=ico||(fam?famItems(fam)[0][0]:autoSlug(name)), hv=alt&&alt.h||0;
+  if(ICO_COLOR[base]) h+='<span class="small muted">Sa couleur</span><div class="hues" id="althues" data-hue="'+hv+'">'+ICO_HUES.map(function(c){ var on=hv===c[0]; return '<button class="hue'+(on?' on':'')+'" data-a="althue" data-x="'+c[0]+'" aria-pressed="'+on+'" aria-label="'+esc(c[1])+'">'+icoSlugHTML(base).replace('<img ','<img style="filter:hue-rotate('+c[0]+'deg)" ')+'</button>'; }).join('')+'</div>';
+  h+='<button class="linkbtn" data-a="althide" style="align-self:flex-start">Non, c’est le même</button></div>';
+  return h;
+}
 function expModal(){
   var k=view.expFor; if(!k || !checks[k]) return '';
   var it=null, name='', unit='pc', def=1;
@@ -1171,6 +1287,7 @@ function expModal(){
     '<label class="f" for="exp-date">Date de péremption<input class="inp" type="date" id="exp-date" value="'+esc(ci.exp||'')+'" min="'+todayISO(-30)+'"></label>'+
     '<div class="chips" style="flex-wrap:wrap">'+[[3,'+3 j'],[7,'+1 sem'],[14,'+2 sem'],[30,'+1 mois']].map(function(d){ return '<button class="chip" data-a="expquick" data-x="'+d[0]+'">'+d[1]+'</button>'; }).join('')+'</div>'+
     '<label class="f" for="exp-qty">Quantité achetée<span class="qtyedit"><input type="text" inputmode="decimal" id="exp-qty" value="'+esc(String(Math.round(q*100)/100).replace('.',','))+'"><span class="u">'+esc(unit==='pc'?'pc':unitLabel(unit))+'</span></span></label>'+
+    (it ? altBox(name, ci) : '')+
     '<div class="row"><button class="btn primary" data-a="expsave" style="flex:1">Enregistrer</button><button class="btn ghost" data-a="expskip">Passer</button></div>'+
     '<div class="small muted">Tu peux couper ces questions dans Réglages → Courses.</div>'+
     '</div></div>';
@@ -1190,7 +1307,7 @@ function vSettings(){
     return '<div class="packbox"><div class="prow-pack"><input class="inp" aria-label="Produit" data-f="pack" data-i="'+ix+'" data-k="name" value="'+esc(p.name)+'" placeholder="Produit"><input class="inp" aria-label="Taille" data-f="pack" data-i="'+ix+'" data-k="size" inputmode="decimal" value="'+esc(p.size)+'"><select class="inp" aria-label="Unité" data-f="pack" data-i="'+ix+'" data-k="unit">'+['g','ml','pc'].map(function(u){return '<option value="'+u+'"'+(u===p.unit?' selected':'')+'>'+(u==='pc'?'pièces':u)+'</option>';}).join('')+'</select></div>'+
       '<div class="prow-pack2"><select class="inp" aria-label="Type de paquet" data-f="pack" data-i="'+ix+'" data-k="label" style="padding:7px 8px;font-size:14px">'+PACK_LABELS.map(function(l){return '<option'+(l===p.label?' selected':'')+'>'+l+'</option>';}).join('')+'</select><label class="tog"><input type="checkbox" data-f="pack" data-i="'+ix+'" data-k="frais"'+(p.frais?' checked':'')+'> Frais</label><button class="icon-btn" data-a="packdel" data-x="'+ix+'" aria-label="Supprimer">×</button></div></div>';
   }).join('')+'</div><button class="btn" data-a="packadd">+ Ajouter un produit</button>';
-  h+='<div class="small muted" style="text-align:center;margin-top:10px">La cuisine d’Eva · v2.13</div>';
+  h+='<div class="small muted" style="text-align:center;margin-top:10px">La cuisine d’Eva · v2.15.1</div>';
   return h;
 }
 
@@ -1209,8 +1326,8 @@ function render(){
   else h=vHome();
   var tab = ['semaine','courses','stock','nouvelle'].indexOf(r)>=0 ? r : r==='reglages' ? '' : 'accueil';
   var y=window.scrollY;
-  root.innerHTML=header()+'<main class="wrap">'+h+'</main>'+nav(tab)+(toastMsg?'<div class="toast" role="status">'+esc(toastMsg)+'</div>':'')+(r==='courses'?expModal():'')+(r==='stock'?prodModal():'');
-  document.body.classList.toggle('modal-open', !!((r==='courses'&&view.expFor)||(r==='stock'&&view.prodFor)));
+  root.innerHTML=header()+'<main class="wrap">'+h+'</main>'+nav(tab)+(toastMsg?'<div class="toast" role="status">'+esc(toastMsg)+'</div>':'')+(r==='courses'?(expModal()||icoAskModal()):'')+(r==='stock'?prodModal():'');
+  document.body.classList.toggle('modal-open', !!((r==='courses'&&(view.expFor||(view.icoQueue&&view.icoQueue.length)))||(r==='stock'&&view.prodFor)));
   if(r!==lastRoute){ window.scrollTo(0,0); lastRoute=r; } else window.scrollTo(0, ((view.expFor||view.prodFor) && view.keepY!=null) ? view.keepY : y);
 }
 var toastMsg='', toastT=null;
@@ -1260,7 +1377,7 @@ function validationRows(){
     if(!checks[it.key]) return;
     var def = (it.type==='basique'||it.type==='maison') ? null : buyAmount(it);
     var ci=chkInfo(it.key); if(def!=null && ci.qty) def=ci.qty;
-    rows.push({k:it.key, name:it.name, unit:it.unit, type:it.type, aisle:it.aisle, def:def, exp:ci.exp||null});
+    rows.push({k:it.key, name:it.name, unit:it.unit, type:it.type, aisle:it.aisle, def:def, exp:ci.exp||null, alt:ci.alt||null});
   });
   S.plan.extras.forEach(function(x){
     var k='x:'+x.id; if(!checks[k]) return;
@@ -1273,26 +1390,39 @@ function validationRows(){
 }
 /* garde la date la plus proche s'il reste déjà du produit */
 function setExp(st, exp){ if(!exp) return; if(num(st.qty)>0 && st.exp && daysUntil(st.exp)>=0 && st.exp<exp) return; st.exp=exp; }
+function icoAskModal(){
+  var q=view.icoQueue; while(q && q.length && !(S.stock[q[0]] && icoVague(S.stock[q[0]].name))) q.shift();
+  if(!q || !q.length) return '';
+  var st=S.stock[q[0]], f=famOfName(st.name);
+  return '<div class="modal-bg"><div class="card modal stack" role="dialog" aria-modal="true" aria-labelledby="ask-title">'+
+    '<div class="row between"><div><h2 id="ask-title">Quel modèle de « '+esc(cap(st.name))+' » ?</h2><div class="small muted">Touche l’image qui correspond</div></div><button class="icon-btn" data-a="askskip" aria-label="Passer">×</button></div>'+
+    '<div class="icogrid">'+famItems(f).map(function(it){ return '<button class="icopt" data-a="askset" data-x="'+esc(it[0])+'">'+icoSlugHTML(it[0])+'<span>'+esc(it[1])+'</span></button>'; }).join('')+'</div>'+
+    '<div class="row between"><span class="small muted">'+(q.length>1?'encore '+(q.length-1)+' après':'')+'</span><button class="btn ghost" data-a="askskip">Passer</button></div>'+
+    '</div></div>';
+}
 function validateShopping(){
-  var rows=validationRows(), n=0;
+  var rows=validationRows(), n=0, touched=[];
   rows.forEach(function(r){
     var q = r.def==null ? null : (view.vq[r.k]!=null && String(view.vq[r.k]).trim()!=='' ? num(view.vq[r.k]) : r.def);
     if(r.extra){
-      if(!r.st && r.type==='maison'){ var em=ensureStock(r.name,'*','maison',r.extra.aisle); em.st.level='ok'; em.st.at=now(); n++; }
+      if(!r.st && r.type==='maison'){ var em=ensureStock(r.name,'*','maison',r.extra.aisle); em.st.level='ok'; em.st.at=now(); n++; touched.push(em.st.key); }
       if(r.st){
         if(r.st.type==='maison') r.st.level='ok';
-        else if(r.st.type==='basique') r.st.have=true; else { setExp(r.st,r.exp); r.st.qty=num(r.st.qty)+q; r.st.lastBuy=q; r.st.bought=now(); }
-        r.st.at=now(); n++;
+        else if(r.st.type==='basique') r.st.have=true; else { addLot(r.st,q,r.exp); r.st.lastBuy=q; r.st.bought=now(); }
+        r.st.at=now(); n++; touched.push(r.st.key);
       }
       S.plan.extras=S.plan.extras.filter(function(e){ return e!==r.extra; });
       return;
     }
-    var e=ensureStock(r.name, (r.type==='basique'||r.type==='maison')?'*':r.unit, r.type, r.aisle);
+    var nm=r.alt ? r.alt.name : r.name;
+    var e=ensureStock(nm, (r.type==='basique'||r.type==='maison')?'*':r.unit, r.type, r.aisle);
+    if(r.alt && (r.alt.ico||r.alt.h)){ S.icons=S.icons||{}; var pi={}; if(r.alt.ico) pi.s=r.alt.ico; if(r.alt.h) pi.h=r.alt.h; S.icons[norm(nm)]=pi; }
     if(r.type==='maison') e.st.level='ok';
     else if(r.type==='basique') e.st.have=true;
-    else { setExp(e.st,r.exp); e.st.qty=num(e.st.qty)+q; e.st.lastBuy=q; e.st.bought=now(); }
-    e.st.at=now(); n++;
+    else { addLot(e.st,q,r.exp); e.st.lastBuy=q; e.st.bought=now(); }
+    e.st.at=now(); n++; touched.push(e.st.key);
   });
+  view.icoQueue=touched.filter(function(k,i){ return touched.indexOf(k)===i && S.stock[k] && icoVague(S.stock[k].name); });
   checks={}; view.vq={}; view.validate=false;
   saveChecks(); save();
   return n;
@@ -1391,7 +1521,12 @@ var ACT={
   copyclose:function(){ view.copyText=''; render(); },
   expopen:function(x){ view.keepY=window.scrollY; view.expFor=x; render(); },
   expquick:function(x){ var el=document.getElementById('exp-date'); if(el) el.value=todayISO(num(x)); },
-  expsave:function(){ var k=view.expFor; if(k && checks[k]){ var d=document.getElementById('exp-date'), q=document.getElementById('exp-qty'); var o={}; if(d && d.value) o.exp=d.value; if(q && String(q.value).trim()!=='') o.qty=Math.max(0,num(q.value)); checks[k]=Object.keys(o).length?o:1; saveChecks(); } view.expFor=null; render(); restoreY(); },
+  altshow:function(){ var b=document.getElementById('altbox'), l=document.getElementById('altlink'); if(b){ b.hidden=false; if(l) l.hidden=true; var i=document.getElementById('exp-alt'); if(i){ i.focus(); var v=i.value; i.value=''; i.value=v; } } },
+  althide:function(){ var b=document.getElementById('altbox'), l=document.getElementById('altlink'); if(b){ b.hidden=true; if(l) l.hidden=false; } },
+  althue:function(x){ var b=document.getElementById('althues'); if(!b) return; b.setAttribute('data-hue',x); b.querySelectorAll('.hue').forEach(function(e){ var on=e.getAttribute('data-x')===x; e.classList.toggle('on',on); e.setAttribute('aria-pressed',on); }); },
+  altico:function(x){ var b=document.getElementById('altbox'); if(!b) return; b.setAttribute('data-ico',x); b.querySelectorAll('.icopt').forEach(function(e){ var on=e.getAttribute('data-x')===x; e.classList.toggle('on',on); e.setAttribute('aria-pressed',on); }); },
+  expsave:function(){ var k=view.expFor; if(k && checks[k]){ var d=document.getElementById('exp-date'), q=document.getElementById('exp-qty'), ab=document.getElementById('altbox'), an=document.getElementById('exp-alt'); var o={}; if(d && d.value) o.exp=d.value; if(q && String(q.value).trim()!=='') o.qty=Math.max(0,num(q.value));
+      if(ab && !ab.hidden && an && an.value.trim() && norm(an.value)!==norm(ab.getAttribute('data-base'))) { var hb=document.getElementById('althues'); o.alt={name:an.value.trim(), ico:ab.getAttribute('data-ico')||null, h:hb?(+hb.getAttribute('data-hue')||0):0}; } checks[k]=Object.keys(o).length?o:1; saveChecks(); } view.expFor=null; render(); restoreY(); },
   expskip:function(){ view.expFor=null; render(); restoreY(); },
   validask:function(){ view.validate=true; view.vq={}; render(); var el=document.getElementById('valid'); if(el) el.scrollIntoView({block:'start'}); },
   validcancel:function(){ view.validate=false; render(); },
@@ -1408,7 +1543,16 @@ var ACT={
   havecycle:function(x){ var st=S.stock[x]; if(!st) return; st.have=!st.have; st.at=now(); save(); render(); },
   aislepick:function(x){ view.aisleFor=x; render(); },
   prodopen:function(x){ view.keepY=window.scrollY; view.prodFor=x; render(); },
-  prodclose:function(){ view.prodFor=null; render(); restoreY(); },
+  prodclose:function(){ view.prodFor=null; view.icoFor=null; render(); restoreY(); },
+  askset:function(x){ var q=view.icoQueue||[], st=S.stock[q[0]]; if(st){ S.icons=S.icons||{}; var p=S.icons[norm(st.name)]||{}; p.s=x; S.icons[norm(st.name)]=p; save(); } q.shift(); render(); },
+  askskip:function(){ var q=view.icoQueue||[], st=S.stock[q[0]]; if(st){ S.icons=S.icons||{}; var p=S.icons[norm(st.name)]||{}; p.s=autoSlug(st.name); S.icons[norm(st.name)]=p; save(); } q.shift(); render(); },
+  icopick:function(){ view.icoFor=view.prodFor; view.icoAll=false; render(); var m=document.querySelector('.modal'); if(m) m.scrollTop=0; },
+  icoback:function(){ var d=view.icoDirect; view.icoFor=null; view.icoDirect=false; if(d){ view.prodFor=null; render(); restoreY(); } else render(); },
+  icodirect:function(x){ view.keepY=window.scrollY; view.prodFor=x; view.icoFor=x; view.icoDirect=true; view.icoAll=false; render(); },
+  icoset:function(x){ var st=S.stock[view.icoFor]; if(!st) return; var k=norm(st.name), p=S.icons[k]||{}; p.s=x; S.icons[k]=p; save(); render(); },
+  icohue:function(x){ var st=S.stock[view.icoFor]; if(!st) return; var k=norm(st.name), p=S.icons[k]||{}; p.h=+x||0; if(!p.h) delete p.h; S.icons[k]=p; if(!p.s&&!p.h) delete S.icons[k]; save(); render(); },
+  icoauto:function(){ var st=S.stock[view.icoFor]; if(!st) return; delete S.icons[norm(st.name)]; save(); render(); },
+  lotdel:function(x,y){ var st=S.stock[x]; if(!st||!st.lots||!st.lots[+y]) return; st.qty=r3(Math.max(0,num(st.qty)-num(st.lots[+y].q))); st.lots.splice(+y,1); st.exp=null; st.at=now(); save(); render(); },
   pqty:function(x,y){ var st=S.stock[x]; if(!st) return; st.qty=Math.max(0,Math.round((num(st.qty)+num(y))*100)/100); st.at=now(); save(); render(); },
   stview:function(x){ S.settings=S.settings||{}; S.settings.stockView=x; save(); render(); },
   have:function(x,y){ var st=S.stock[x]; if(!st) return; st.have = y==='1'; st.at=now(); save(); render(); },
@@ -1444,6 +1588,7 @@ root.addEventListener('click',function(e){
 });
 root.addEventListener('keydown',function(e){
   if(e.key==='Escape' && view.expFor){ ACT.expskip(); return; }
+  if(e.key==='Escape' && view.icoFor){ ACT.icoback(); return; }
   if(e.key==='Escape' && view.prodFor){ ACT.prodclose(); return; }
   if((e.key==='Enter'||e.key===' ') && e.target.matches && e.target.matches('.rcard')){ e.preventDefault(); ACT.open(e.target.getAttribute('data-x')); }
   if(e.key==='Enter' && e.target.id && e.target.id.indexOf('ans-')===0){ e.preventDefault(); ACT.ansnum(e.target.id.slice(4)); }
@@ -1495,7 +1640,8 @@ root.addEventListener('change',function(e){
   if(f==='setaisle'){ S.aisles=S.aisles||{}; S.aisles[key]=t.value; vals(S.stock).forEach(function(z){ if(z.nk===key && z.type!=='maison') z.aisle=t.value; }); view.aisleFor=null; save(); render(); return; }
   if(f==='scat'){ var s8=S.stock[key]; if(s8){ s8.aisle=t.value; S.aisles=S.aisles||{}; S.aisles[s8.nk]=t.value; save(); render(); } return; }
   if(f==='setexp'){ S.settings=S.settings||{}; S.settings.expAsk=!!t.checked; save(); render(); return; }
-  if(f==='sexp'){ var s6=S.stock[key]; if(s6){ s6.exp=t.value||null; save(); render(); } return; }
+  if(f==='sexp'){ var s6=S.stock[key]; if(s6){ s6.exp=t.value||null; if(s6.lots && s6.lots.length===1) s6.lots[0].exp=s6.exp; save(); render(); } return; }
+  if(f==='lotq' || f==='lotexp'){ var s7=S.stock[key], li=+t.getAttribute('data-y'); if(s7 && s7.lots && s7.lots[li]){ if(f==='lotq'){ var nq=Math.max(0,num(t.value)); s7.qty=r3(num(s7.qty)-num(s7.lots[li].q)+nq); s7.lots[li].q=nq; } else { s7.lots[li].exp=t.value||null; } s7.at=now(); save(); render(); } return; }
   if(f==='saskexp'){ var s7=S.stock[key]; if(s7){ s7.askExp=!!t.checked; save(); render(); } return; }
   if(f==='mevery'){ var s5=S.stock[key]; if(s5){ s5.every=num(t.value); save(); render(); } return; }
   if(f==='mcat'){ var s4=S.stock[key]; if(s4){ s4.aisle=t.value; save(); render(); } return; }
@@ -1521,7 +1667,7 @@ root.addEventListener('submit',function(e){
     var n2=document.getElementById('s-name'); if(n2) n2.focus();
   }
 });
-document.addEventListener('keydown',function(e){ if(e.key!=='Escape') return; if(view.expFor) ACT.expskip(); else if(view.prodFor) ACT.prodclose(); });
+document.addEventListener('keydown',function(e){ if(e.key!=='Escape') return; if(view.icoQueue && view.icoQueue.length && !view.expFor){ ACT.askskip(); return; } if(view.expFor) ACT.expskip(); else if(view.icoFor) ACT.icoback(); else if(view.prodFor) ACT.prodclose(); });
 window.addEventListener('hashchange',function(){ view.prodFor=null; view.confirmDel=null; view.copyText=''; view.confirmRestore=null; var r=route(); if(r.indexOf('modifier-')!==0 && r!=='nouvelle'){ view.draftFor=null; } render(); });
 render();
 })();

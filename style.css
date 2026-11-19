@@ -322,3 +322,37 @@ button.stile:active{transform:translateY(2px)}
 .qbig .u{font-weight:800;color:var(--muted);min-width:24px}
 .popts{border-top:2px dashed var(--line);padding-top:10px}
 body[data-pixel] .qbig input{border-radius:4px}
+
+body.modal-open{overflow:hidden}
+.modal-bg{overscroll-behavior:contain}
+.aisle-pick{border:2px solid var(--line);border-radius:10px;padding:3px 6px;font-size:12.5px;font-weight:800;background:var(--surface);color:var(--ink)}
+
+/* choix de l'image d'un produit */
+.icobtn{position:relative;border:0;background:none;padding:0;cursor:pointer;display:inline-flex;border-radius:16px}
+.icobtn .pen{position:absolute;right:-2px;bottom:-4px;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.modal .icogrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.modal .icoall{max-height:40vh;overflow:auto;padding:2px}
+.icopt{border:2px solid transparent;background:var(--soft);border-radius:14px;padding:6px 2px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:inherit;font:inherit;font-size:10.5px;line-height:1.1;min-width:0}
+.icopt span:last-child{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icopt .ico{margin:0;width:48px;height:48px;padding:4px}
+.icopt.on{border-color:var(--accent)}
+.hues{display:flex;gap:6px;flex-wrap:wrap}
+.hue{border:2px solid transparent;background:var(--soft);border-radius:12px;padding:2px;cursor:pointer}
+.hue .ico{margin:0;width:44px;height:44px;padding:4px}
+.hue.on{border-color:var(--accent)}
+.modal{max-height:88vh;overflow:auto}
+.srow .icobtn{margin:-10px -4px -10px -8px}
+.srow .icobtn .ico{margin:0}
+
+/* lots */
+.lotpill{border:0;cursor:pointer;background:var(--soft);color:var(--accent);font-weight:800}
+.lots .lot{display:flex;gap:8px;align-items:center}
+.lots .lot .qtyedit{flex:none}
+.lots .lot input[type=date]{flex:1;min-width:0;padding:8px 10px}
+.lots .lot.soon input[type=date]{border-color:#E8A23A}
+.icon-btn.sm{width:34px;height:34px;font-size:16px;flex:none}
+
+.altbox{border-top:2px dashed var(--line);padding-top:10px}
+.altbox .icogrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+
+[hidden]{display:none!important}
