@@ -621,11 +621,11 @@ function daysUntil(iso){ if(!iso) return null; var d=new Date(iso+'T12:00:00'), 
 function fmtDate(iso){ try{ return new Date(iso+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'}); }catch(e){ return iso; } }
 function expText(iso){ var d=daysUntil(iso); if(d==null) return ''; if(d<0) return 'périmé depuis le '+fmtDate(iso); if(d===0) return 'à consommer aujourd’hui'; if(d===1) return 'à consommer demain'; return 'à consommer avant le '+fmtDate(iso); }
 function expPill(iso){ var d=daysUntil(iso); if(d==null) return ''; if(d<0) return '<span class="pill" style="background:#F6B9C6;color:#8A1C33">périmé</span>'; if(d<=2) return '<span class="pill warn">périme bientôt</span>'; return ''; }
-var EXP_AISLES = ['Frais & crèmerie','Tofu & protéines'];
+var EXP_AISLES = ['Frais & crèmerie','Tofu & protéines','Conserves & bocaux','Surgelés','Boulangerie'];
 function wantsExp(key){
   if(!S.settings || S.settings.expAsk===false) return false;
   var info=null;
-  if(key.indexOf('x:')===0){ S.plan.extras.forEach(function(x){ if('x:'+x.id===key && x.skey && S.stock[x.skey]) info={type:S.stock[x.skey].type, aisle:S.stock[x.skey].aisle, skey:x.skey}; }); }
+  if(key.indexOf('x:')===0){ S.plan.extras.forEach(function(x){ if('x:'+x.id!==key) return; if(x.skey && S.stock[x.skey]) info={type:S.stock[x.skey].type, aisle:S.stock[x.skey].aisle, skey:x.skey}; else { var a=x.aisle||guessAisle(x.name); info={type:typeOf(x.name,a), aisle:a, skey:skeyOf(norm(x.name),'pc',typeOf(x.name,a))}; } }); }
   else { var it=findShopItem(key); if(it) info={type:it.type, aisle:it.aisle, skey:it.key}; }
   if(!info || info.type==='basique' || info.type==='maison') return false;
   var st=S.stock[info.skey];
@@ -1082,7 +1082,7 @@ function srowHTML(st){
   var low=isLow(st), q=num(st.qty), open=!!view.sopen[st.key];
   var status='';
   if(st.type==='basique') status='';
-  else if(q<=0) status='<span class="pill plain">épuisé</span>';
+  else if(q<=0) status='';
   else if(low) status='<span class="pill warn">bientôt épuisé</span>';
   var right = st.type==='basique'
     ? '<button class="lvl lvl-'+(st.have?'ok':'out')+'" data-a="havecycle" data-x="'+esc(st.key)+'" aria-label="'+esc(cap(st.name))+' : '+(st.have?'j’en ai':'fini')+'. Toucher pour changer">'+(st.have?'J’en ai':'Fini')+'</button>'
@@ -1232,8 +1232,8 @@ function vStock(){
   [['compte','Comptés','#FFB872'],['basique','Basiques','#C9A27E'],['frais','Frais','#7BD389']].forEach(function(g){
     var its=all.filter(function(st){return st.type===g[0];}).sort(function(a,b){ return a.name.localeCompare(b.name,'fr'); });
     if(!its.length) return;
-    var lowN=its.filter(isLow).length;
-    h+='<section class="card sgroup"><h2>'+esc(g[1])+(lowN?' <span class="pill warn">'+lowN+' bientôt épuisé'+(lowN>1?'s':'')+'</span>':'')+'</h2><div class="small muted" style="margin-bottom:6px">'+esc(TYPE_HELP[g[0]])+'</div>'+its.map(srowHTML).join('')+'</section>';
+    var lowN=its.filter(function(st){ return num(st.qty)>0 && isLow(st); }).length, outN=g[0]==='basique' ? its.filter(function(st){ return !st.have; }).length : its.filter(function(st){ return num(st.qty)<=0; }).length;
+    h+='<section class="card sgroup"><h2>'+esc(g[1])+(lowN?' <span class="pill warn">'+lowN+' bientôt épuisé'+(lowN>1?'s':'')+'</span>':'')+(outN?' <span class="pill out">'+outN+' '+(g[0]==='basique'?'fini':'épuisé')+(outN>1?'s':'')+'</span>':'')+'</h2><div class="small muted" style="margin-bottom:6px">'+esc(TYPE_HELP[g[0]])+'</div>'+its.map(srowHTML).join('')+'</section>';
   });
   h+='<form class="card stack" id="sform"><h3>Ajouter au stock</h3><div class="small muted">Pour ce que tu as déjà dans tes placards.</div><input class="inp" id="s-name" placeholder="Ex. : riz, huile d’olive, œufs" autocomplete="off" aria-label="Produit">'+
     '<div class="grid3"><input class="inp" id="s-qty" inputmode="decimal" placeholder="Quantité" aria-label="Quantité"><select class="inp" id="s-unit" aria-label="Unité"><option value="g">g</option><option value="ml">ml</option><option value="pc">pièce(s)</option></select></div>'+
@@ -1307,7 +1307,7 @@ function vSettings(){
     return '<div class="packbox"><div class="prow-pack"><input class="inp" aria-label="Produit" data-f="pack" data-i="'+ix+'" data-k="name" value="'+esc(p.name)+'" placeholder="Produit"><input class="inp" aria-label="Taille" data-f="pack" data-i="'+ix+'" data-k="size" inputmode="decimal" value="'+esc(p.size)+'"><select class="inp" aria-label="Unité" data-f="pack" data-i="'+ix+'" data-k="unit">'+['g','ml','pc'].map(function(u){return '<option value="'+u+'"'+(u===p.unit?' selected':'')+'>'+(u==='pc'?'pièces':u)+'</option>';}).join('')+'</select></div>'+
       '<div class="prow-pack2"><select class="inp" aria-label="Type de paquet" data-f="pack" data-i="'+ix+'" data-k="label" style="padding:7px 8px;font-size:14px">'+PACK_LABELS.map(function(l){return '<option'+(l===p.label?' selected':'')+'>'+l+'</option>';}).join('')+'</select><label class="tog"><input type="checkbox" data-f="pack" data-i="'+ix+'" data-k="frais"'+(p.frais?' checked':'')+'> Frais</label><button class="icon-btn" data-a="packdel" data-x="'+ix+'" aria-label="Supprimer">×</button></div></div>';
   }).join('')+'</div><button class="btn" data-a="packadd">+ Ajouter un produit</button>';
-  h+='<div class="small muted" style="text-align:center;margin-top:10px">La cuisine d’Eva · v2.15.1</div>';
+  h+='<div class="small muted" style="text-align:center;margin-top:10px">La cuisine d’Eva · v2.15.3</div>';
   return h;
 }
 
@@ -1384,7 +1384,9 @@ function validationRows(){
     var st=x.skey?S.stock[x.skey]:null, def=null;
     if(st && st.type!=='basique'){ var pk=packMap()[x.skey]; def=num(st.lastBuy)||(pk?num(pk.size):0)||threshold(st)||1; }
     var cx=chkInfo(k); if(def!=null && cx.qty) def=cx.qty;
-    rows.push({k:k, name:x.name, unit:st?st.unit:'', type:st?st.type:(isMaisonAisle(x.aisle)?'maison':''), extra:x, st:st, def:def, exp:cx.exp||null});
+    var nt=st?st.type:typeOf(x.name, x.aisle||guessAisle(x.name));
+    if(!st && nt!=='basique' && nt!=='maison') def=cx.qty||1;
+    rows.push({k:k, name:x.name, unit:st?st.unit:(nt==='basique'||nt==='maison'?'*':'pc'), type:nt, extra:x, st:st, def:def, exp:cx.exp||null});
   });
   return rows;
 }
@@ -1406,6 +1408,7 @@ function validateShopping(){
     var q = r.def==null ? null : (view.vq[r.k]!=null && String(view.vq[r.k]).trim()!=='' ? num(view.vq[r.k]) : r.def);
     if(r.extra){
       if(!r.st && r.type==='maison'){ var em=ensureStock(r.name,'*','maison',r.extra.aisle); em.st.level='ok'; em.st.at=now(); n++; touched.push(em.st.key); }
+      else if(!r.st){ var en=ensureStock(r.name, r.type==='basique'?'*':'pc', r.type, r.extra.aisle||guessAisle(r.name)); if(r.type==='basique') en.st.have=true; else { addLot(en.st,q||1,r.exp); en.st.lastBuy=q||1; en.st.bought=now(); } en.st.at=now(); n++; touched.push(en.st.key); }
       if(r.st){
         if(r.st.type==='maison') r.st.level='ok';
         else if(r.st.type==='basique') r.st.have=true; else { addLot(r.st,q,r.exp); r.st.lastBuy=q; r.st.bought=now(); }

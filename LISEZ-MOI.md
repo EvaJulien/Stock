@@ -12,6 +12,7 @@ Toutes les données restent sur le téléphone (rien n'est envoyé en ligne).
 | `style.css` | Le style (couleurs pastel, polices rondes) |
 | `seed.js` | Les recettes de départ (reprises de la v1, dont les pâtes aux champignons d'Eva) |
 | `manifest.webmanifest`, `sw.js` | Ce qui rend l'appli installable et utilisable hors connexion |
+| `version.json` | Le numéro de la version en ligne (sert au bandeau de mise à jour) |
 | `icons/` | Icône de l'appli + dossier `ingredients/` pour les icônes d'ingrédients |
 
 ## Tester sur l'ordinateur
@@ -29,8 +30,34 @@ Double-cliquer sur `index.html` suffit pour voir l'appli dans le navigateur
    Sur Android : Chrome → menu ⋮ → « Installer l'application ».
 5. Toujours ouvrir l'appli depuis l'icône (sur iPhone, Safari et l'icône ont des données séparées).
 
-À chaque mise à jour : renvoyer les fichiers modifiés sur GitHub et changer
-`VERSION` en haut de `sw.js` (ex. `cuisine-eva-v2.0.1`).
+## Mettre à jour l'appli sur les téléphones
+
+Le numéro de version est écrit à **4 endroits**, qui doivent toujours être identiques :
+
+| Où | Quoi |
+|---|---|
+| `app.js` (1re ligne de code) | `var APP_VERSION = '2.16.0';` |
+| `version.json` | `{"version": "2.16.0"}` |
+| `index.html` | les `?v=2.16.0` après `style.css`, `seed.js` et `app.js` |
+| `sw.js` | `var VERSION = '2.16.0';` |
+
+Marche à suivre à chaque nouvelle version :
+
+1. Changer le numéro aux 4 endroits (Claude le fait et indique les fichiers à envoyer).
+2. Sur GitHub, envoyer **tous les fichiers modifiés en une fois** (dont `version.json`),
+   puis cliquer sur « Commit changes ». Maximum 100 fichiers par envoi : pour beaucoup
+   d'icônes, les envoyer directement dans `icons/ingredients-pixel` en plusieurs fois.
+3. Attendre la **coche verte** à côté du dernier envoi (1 à 2 minutes).
+4. Ouvrir l'appli sur le téléphone (ou revenir dessus) : un bandeau
+   « Nouvelle version disponible » apparaît → « Mettre à jour ».
+   Les données (recettes, semaine, stock) ne sont jamais effacées.
+
+Si le bandeau rouge « La version x.y.z ne s'installe pas » apparaît : un fichier
+n'a pas été remplacé sur GitHub (souvent `app.js` ou `style.css`). Renvoyer tous les
+fichiers, attendre la coche verte, puis « Réessayer ».
+
+Dans Réglages → Mise à jour : la version installée, « Vérifier les mises à jour »
+et « Forcer la mise à jour » (vide le cache de l'appli et recharge, sans toucher aux données).
 
 ## Récupérer les recettes de la v1
 

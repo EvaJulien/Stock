@@ -356,3 +356,5 @@ body.modal-open{overflow:hidden}
 .altbox .icogrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 
 [hidden]{display:none!important}
+.pill.out{background:#FFD3D8;color:#B4233A}
+body[data-dark] .pill.out{background:#4F222A;color:#FF9AA8}
